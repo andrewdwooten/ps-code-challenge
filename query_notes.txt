@@ -1,0 +1,126 @@
+WITH total_chair_count AS (
+  SELECT SUM(number_of_chairs)
+    AS count FROM street_cafes ),
+SELECT post_code,
+COUNT(*) AS "total_places",
+SUM(number_of_chairs) AS "total_chairs",
+(SUM(number_of_chairs)::float / total_chair_count.count * 100 ) AS chair_pct ,
+MAX(number_of_chairs) as “max_chairs”,
+FROM street_cafes, total_chair_count
+GROUP BY post_code, total_chair_count.count
+;
+
+
+SELECT name, a.post_code,  a.number_of_chairs AS max_chairs, b.total_chairs, b.total_places
+FROM street_cafes a
+INNER JOIN (
+WITH total_chair_count AS (
+SELECT SUM(number_of_chairs)
+AS count FROM street_cafes )
+SELECT post_code, MAX(number_of_chairs) number_of_chairs, SUM(number_of_chairs) total_chairs, COUNT(*) total_places, (SUM(number_of_chairs)::float / total_chair_count.count * 100 ) chair_pct
+FROM street_cafes b
+GROUP BY post_code
+) b ON a.post_code = b.post_code AND a.number_of_chairs = b.number_of_chairs;
+
+WITH total_chair_count AS (SELECT SUM(number_of_chairs) AS count FROM street_cafes ) SELECT post_code,COUNT(*) AS "total_places", SUM(number_of_chairs) AS "total_chairs", (SUM(number_of_chairs)::float / total_chair_count.count * 100 ) AS chair_pct , MAX(number_of_chairs) as max_chairs
+FROM street_cafes, total_chair_count
+GROUP BY post_code, total_chair_count.count
+;
+
+WITH total_chair_count AS (
+SELECT SUM(number_of_chairs)
+AS count FROM street_cafes )
+ SELECT name, a.post_code,  a.number_of_chairs AS max_chairs, b.total_chairs, b.total_places, b.chair_pct
+FROM street_cafes a
+INNER JOIN (
+SELECT post_code, MAX(number_of_chairs) number_of_chairs, SUM(number_of_chairs) total_chairs, COUNT(*) total_places, (SUM(number_of_chairs)::float / 100 ) chair_pct
+FROM street_cafes b
+GROUP BY post_code
+) b ON a.post_code = b.post_code AND a.number_of_chairs = b.number_of_chairs;   WITH total_chair_count AS (
+SELECT SUM(number_of_chairs)
+AS count FROM street_cafes )
+ SELECT name, a.post_code,  a.number_of_chairs AS max_chairs, b.total_chairs, b.total_places, b.total_chairs::float / total_chair_count.count * 100
+FROM street_cafes a
+INNER JOIN (
+SELECT post_code, MAX(number_of_chairs) number_of_chairs, SUM(number_of_chairs) total_chairs, COUNT(*) total_places
+FROM street_cafes b
+GROUP BY post_code
+) b ON a.post_code = b.post_code AND a.number_of_chairs = b.number_of_chairs;
+
+Working solution:
+WITH total_chair_count AS (
+SELECT SUM(number_of_chairs)
+AS count FROM street_cafes )
+ SELECT name, a.post_code,  a.number_of_chairs AS max_chairs, b.total_chairs, b.total_places, b.total_chairs::float / (SELECT total_chair_count.count FROM total_chair_count) * 100 chair_pct
+FROM street_cafes a
+INNER JOIN (
+SELECT post_code, MAX(number_of_chairs) number_of_chairs, SUM(number_of_chairs) total_chairs, COUNT(*) total_places
+FROM street_cafes b
+GROUP BY post_code
+) b ON a.post_code = b.post_code AND a.number_of_chairs = b.number_of_chairs;   
+
+CREATE VIEW post_code_store_cafe_aggs AS WITH total_chair_count AS (
+SELECT SUM(number_of_chairs)
+AS count FROM street_cafes )
+ SELECT name AS place_with_max_chairs, a.post_code,  a.number_of_chairs AS max_chairs, b.total_chairs, b.total_places, b.total_chairs::float / (SELECT total_chair_count.count FROM total_chair_count) * 100 chair_pct
+FROM street_cafes a
+INNER JOIN (
+SELECT post_code, MAX(number_of_chairs) number_of_chairs, SUM(number_of_chairs) total_chairs, COUNT(*) total_places
+FROM street_cafes b
+GROUP BY post_code
+) b ON a.post_code = b.post_code AND a.number_of_chairs = b.number_of_chairs;  
+
+CREATE TABLE street_cafes (
+name VARCHAR ( 50 ) NOT NULL,
+address VARCHAR ( 50 ) NOT NULL,
+post_code VARCHAR ( 10 ) NOT NULL,
+chair_count SMALLINT  NOT NULL);
+
+ COPY street_cafes(name, street_address, post_code, number_of_chairs, category)
+FROM '/Users/andrewwooten/Desktop/ps-code-challenge/Street Cafes 2020-21.csv'
+DELIMITER ','
+CSV HEADER;  UPDATE street_cafes
+
+SET category = case
+WHEN number_of_chairs < 10 THEN 'ls1 small'
+WHEN (number_of_chairs >= 10 AND number_of_chairs < 100) THEN 'ls1 medium'
+WHEN number_of_chairs > 100 THEN 'ls1 large'
+END
+WHERE post_code LIKE 'LS1%';
+
+WITH percentile AS (
+SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY number_of_chairs)
+FROM street_cafes
+WHERE post_code LIKE 'LS2%')
+SELECT * FROM street_cafes WHERE number_of_chairs > (SELECT percentile.percentile_cont FROM percentile) AND post_code LIKE 'LS2 %';
+
+WITH percentile AS (
+SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY number_of_chairs)
+FROM street_cafes
+WHERE post_code LIKE 'LS2%')
+UPDATE  street_cafes
+SET
+  category = case
+WHEN number_of_chairs  < (SELECT percentile.percentile_cont FROM percentile) THEN ‘ls2 small’
+WHEN number_of_chairs  > (SELECT percentile.percentile_cont FROM percentile) THEN ‘ls2 large’
+END
+WHERE post_code LIKE ‘LS2 %’
+
+ UPDATE street_cafes
+SET name = category || '' || name
+WHERE category LIKE ‘% medium’ OR category LIKE ‘% large ;
+
+SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY number_of_chairs)
+FROM street_cafes
+WHERE post_code LIKE 'LS2%';
+
+WITH percentile AS (
+SELECT * from street_cafes,
+(SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY number_of_chairs) FROM street_cafes WHERE post_code LIKE 'LS2 %') temp
+WHERE post_code LIKE 'LS2 %')
+UPDATE street_cafes
+SET category = case
+WHEN number_of_chairs < 10 THEN 'ls1 small'
+WHEN (number_of_chairs >= 10 AND number_of_chairs < 100) THEN 'ls1 medium'
+WHEN number_of_chairs > 100 THEN 'ls1 large'
+END
