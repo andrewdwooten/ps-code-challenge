@@ -27,7 +27,7 @@
       - Ensured no false values in test_result column
 
   - place_with_max_chairs
-      - I honestly couldn't come up with a great way to reliably test this.
+      - I honestly couldn't come up with a great way to reliably check this.
       - SELECT name, number_of_chairs, post_code FROM street_cafes ORDER BY post_code;
       - SELECT place_with_max_chairs, max_chairs, post_code FROM street_cafe_by_post;
       - No pun, spot checked.
@@ -58,4 +58,15 @@
   - other
       - SELECT DISTINCT category FROM street_cafes
         WHERE post_code NOT LIKE 'LS2 %' AND post_code NOT LIKE 'LS1 %';
-      - Only one result present: 'ls2 large'
+      - Only one result present: 'other'
+  - For all the above:
+      - SELECT post_code, category, number_of_chairs FROM street_cafes
+        ORDER BY category;
+      - Sanity checked
+
+6) After creating view
+  - SELECT SUM(number_of_chairs) AS test_total_chairs, COUNT(street_address) as test_place_count FROM street_cafes WHERE category LIKE 'ls1 small';
+  - SELECT * FROM category_aggregates;
+  - Iterate on first query for each category and compare to values in view to ensure parity
+
+7)
