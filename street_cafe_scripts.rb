@@ -11,7 +11,9 @@ class StreetCafeScripts
     create_street_cafes_table
     add_category_to_street_cafes
     load_street_cafes_data
+    create_post_code_grouped_view
     categorize_street_cafes
+    create_category_aggregates_view
   end
 
   def reset_street_cafes
@@ -99,7 +101,7 @@ class StreetCafeScripts
   def export_small_cafes_to_csv_and_delete
       File.new("output.csv", "w")
       File.open("output.csv", 'w') do |f|
-        conn.copy_data "COPY (SELECT  * FROM street_cafes WHERE category = 'ls1 small' OR category = 'ls2 small') TO STDOUT WITH (FORMAT CSV, HEADER TRUE)" do
+        conn.copy_data "COPY (SELECT  * FROM street_cafes WHERE category LIKE '% small') TO STDOUT WITH (FORMAT CSV, HEADER TRUE)" do
           while row=conn.get_copy_data
             f.write row
           end

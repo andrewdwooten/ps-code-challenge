@@ -70,3 +70,30 @@
   - Iterate on first query for each category and compare to values in view to ensure parity
 
 7)
+  - CSV export and deletion from table of small cafes
+      - CREATE TABLE copied_small_cafes (
+        name VARCHAR ( 50 ) NOT NULL,
+        street_address VARCHAR ( 50 ) NOT NULL,
+        post_code VARCHAR ( 10 ) NOT NULL,
+        number_of_chairs SMALLINT  NOT NULL),
+        category VARCHAR ( 10 )  NOT NULL);
+      - run script
+      - COPY copied_small_cafes(name, street_address, post_code, number_of_chairs, category)
+        FROM 'path/to/output/file'
+        DELIMITER ','
+        CSV HEADER;
+      - reset database(StreetCafeScripts.new(scripts_db).reset_street_cafes)
+      - CREATE VIEW original_small_cafes AS (
+        SELECT * FROM street_cafes WHERE category LIKE '% small'
+        )
+      - (TABLE copied_small_cafes EXCEPT TABLE original_small_cafes)
+        UNION ALL
+        (TABLE original_small_cafes EXCEPT TABLE copied_small_cafes);
+      - Confirmed empty result of above hopefully validating that the exports
+      - run script again
+      - Confirm with above query that entirey of copied_small_cafes is absent from street_cafes
+  - Renaming of medium/large cafes
+      - SELECT name, category, (name LIKE CONCAT(category, '%')) as test_result FROM street_cafes
+        WHERE( category LIKE '%medium' OR category LIKE '%large');
+      - Ensure no false values in test result column
+
