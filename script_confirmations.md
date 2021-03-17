@@ -24,7 +24,7 @@
           SELECT post_code, chair_pct FROM street_cafe_by_post
           ) AS aggs ON street_cafes.post_code = aggs.post_code
         GROUP BY street_cafes.post_code, aggs.chair_pct;
-          - Ensured no false values in test_result column
+      - Ensured no false values in test_result column
 
   - place_with_max_chairs
       - I honestly couldn't come up with a great way to reliably test this.
@@ -32,5 +32,30 @@
       - SELECT place_with_max_chairs, max_chairs, post_code FROM street_cafe_by_post;
       - No pun, spot checked.
 
-5)
-
+5) After running script
+  - ls1 small
+      - SELECT DISTINCT category FROM street_cafes
+        WHERE number_of_chairs < 10 AND post_code LIKE 'LS1 %';
+      - Only one result present: 'ls1 small'
+  - ls1 medium
+      - SELECT DISTINCT category FROM street_cafes
+        WHERE number_of_chairs >= 10 AND number_of_chairs < 100 AND post_code LIKE 'LS1 %';
+      - Only one result present: 'ls1 medium'
+  - ls1 large
+      - SELECT DISTINCT category FROM street_cafes
+        WHERE number_of_chairs >= 100 AND post_code LIKE 'LS1 %';
+      - Only one result present: 'ls1 large'
+  - ls2 small
+      - With 50th percentile calculated to be 35.5
+      - SELECT DISTINCT category FROM street_cafes
+        WHERE number_of_chairs < 35.5 AND post_code LIKE 'LS2 %';
+      - Only one result present: 'ls2 small'
+  - ls2 large
+      - With 50th percentile calculated to be 35.5
+      - SELECT DISTINCT category FROM street_cafes
+        WHERE number_of_chairs > 35.5 AND post_code LIKE 'LS2 %';
+      - Only one result present: 'ls2 large'
+  - other
+      - SELECT DISTINCT category FROM street_cafes
+        WHERE post_code NOT LIKE 'LS2 %' AND post_code NOT LIKE 'LS1 %';
+      - Only one result present: 'ls2 large'

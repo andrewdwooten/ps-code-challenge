@@ -11,7 +11,7 @@ class StreetCafeScripts
     create_street_cafes_table
     add_category_to_street_cafes
     load_street_cafes_data
-
+    categorize_street_cafes
   end
 
   def reset_street_cafes
@@ -61,7 +61,7 @@ class StreetCafeScripts
       SET category = case
       WHEN number_of_chairs < 10 THEN 'ls1 small'
       WHEN (number_of_chairs >= 10 AND number_of_chairs < 100) THEN 'ls1 medium'
-      WHEN number_of_chairs > 100 THEN 'ls1 large'
+      WHEN number_of_chairs >= 100 THEN 'ls1 large'
       END
       WHERE post_code LIKE 'LS1 %';"
       )
