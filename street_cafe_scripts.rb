@@ -11,6 +11,7 @@ class StreetCafeScripts
     create_street_cafes_table
     add_category_to_street_cafes
     load_street_cafes_data
+
   end
 
   def reset_street_cafes
@@ -40,7 +41,7 @@ class StreetCafeScripts
 
   def create_post_code_grouped_view
     conn.exec (
-      "CREATE VIEW post_code_store_cafe_aggs AS WITH total_chair_count AS (
+      "CREATE VIEW street_cafe_by_post AS WITH total_chair_count AS (
         SELECT SUM(number_of_chairs) AS count FROM street_cafes )
         SELECT name AS place_with_max_chairs, a.post_code,  a.number_of_chairs AS max_chairs,
           b.total_chairs, b.total_places,
@@ -121,3 +122,4 @@ class StreetCafeScripts
     )
   end
 end
+StreetCafeScripts.new('scripts_db').reset_street_cafes
